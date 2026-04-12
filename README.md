@@ -86,3 +86,4 @@ docker rm -f seatalk-bot
 - The container image installs both `poppler-utils` and `imagemagick`.
 - The Google service account must have access to the target spreadsheet.
 - Render deployment steps are documented in [docs/render_web_service_deployment.md](docs/render_web_service_deployment.md).
+- UptimeRobot setup steps are documented in [docs/uptimerobot_setup.md](docs/uptimerobot_setup.md).
