@@ -99,8 +99,7 @@ def load_config() -> Config:
         "etc/secrets/google-service-account.json",
     ).strip()
 
-    service_account_file = path(service_account_file_value) if
-    service_account_file_value else None
+        service_account_file = Path(service_account_file_value) if service_account_file_value else None
 
     config = Config(
         sheet_id=get_setting(env_file_values, "sheet_id", "SHEET_ID"),
@@ -163,23 +162,21 @@ class SeatalkBotService:
         self.config = config
         self.timezone = ZoneInfo(config.timezone_name)
 
-    if config.service_account_json:
-      try:
-        service_account_info = json.loads(config.service_account_json)
-        except json.JSONDecodeError as exc:
-        raise ValueError("GOOGLE_SERVICE_ACCOUNT_JSON is not valid JSON.") from exc
+        if config.service_account_json:
+            try:
+                service_account_info = json.loads(config.service_account_json)
+            except json.JSONDecodeError as exc:
+                raise ValueError("GOOGLE_SERVICE_ACCOUNT_JSON is not valid JSON.") from exc
+            self.credentials = service_account.Credentials.from_service_account_info(
+                service_account_info,
+                scopes=SCOPES,
+            )
+        else:
+            self.credentials = service_account.Credentials.from_service_account_file(
+                str(config.service_account_file),
+                scopes=SCOPES,
+            )
 
-    self.credentials = service_account.Credentials.from_service_account_info(
-        service_account_info,
-        scopes=SCOPES,
-    )
-else:
-    self.credentials = service_account.Credentials.from_service_account_file(
-        str(config.service_account_file),
-        scopes=SCOPES,
-    )
-
-        )
         session = requests.Session()
         session.trust_env = config.use_env_proxy
         self.auth_request = Request(session=session)
