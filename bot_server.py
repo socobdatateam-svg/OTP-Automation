@@ -86,7 +86,7 @@ def ensure_binary(binary_name: str) -> None:
 def load_config() -> Config:
     env_file_values = load_env_file(Path(".env"))
 
-   service_account_file_value = get_setting(
+    service_account_file_value = get_setting(
         env_file_values,
         "google_service_account_json",
         "GOOGLE_SERVICE_ACCOUNT_JSON",
