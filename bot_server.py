@@ -37,7 +37,7 @@ class Config:
     seatalk_webhook_url: str
     report_link: str
     timezone_name: str
-    service_account_file: Path
+    service_account_file: Path | None
     host: str
     port: int
     interval_minutes: int
@@ -84,14 +84,23 @@ def ensure_binary(binary_name: str) -> None:
 
 def load_config() -> Config:
     env_file_values = load_env_file(Path(".env"))
-    service_account_file = Path(
-        get_setting(
+    
+        service_account_json = get_setting(
             env_file_values,
-            "google_service_account_file",
-            "GOOGLE_SERVICE_ACCOUNT_FILE",
-            "google-service-account.json",
-        )
-    )
+            "google_service_account_json",
+            "GOOGLE_SERVICE_ACCOUNT_JSON",
+            "",
+        ).strip ()
+
+        service_account_file_value = get_setting(
+            env_file_values,
+            "google_service_account_file", 
+            "GOOGLE_SERVICE_ACCOUNT_FILE", 
+            "etc/secrets/google-service-account.json",
+        ).strip()
+
+        service_account_file = Path(service_account_file_value) if
+      service_account_file_value else None
 
     config = Config(
         sheet_id=get_setting(env_file_values, "sheet_id", "SHEET_ID"),
@@ -101,6 +110,7 @@ def load_config() -> Config:
         report_link=get_setting(env_file_values, "report_link", "REPORT_LINK"),
         timezone_name=get_setting(env_file_values, "timezone", "BOT_TIMEZONE", "Asia/Manila"),
         service_account_file=service_account_file,
+        service_account_json=service_account_json, 
         host=get_setting(env_file_values, "host", "BOT_HOST", "0.0.0.0"),
         port=int(os.getenv("PORT") or get_setting(env_file_values, "port", "BOT_PORT", "8080")),
         interval_minutes=int(get_setting(env_file_values, "interval_minutes", "BOT_INTERVAL_MINUTES", "10")),
@@ -135,8 +145,15 @@ def load_config() -> Config:
         raise ValueError("BOT_IMAGE_BORDER_PX must be zero or greater.")
     if config.image_resize_width <= 0:
         raise ValueError("BOT_IMAGE_RESIZE_WIDTH must be greater than 0.")
-    if not config.service_account_file.exists():
-        raise FileNotFoundError(f"Service account file not found: {config.service_account_file}")
+        
+    if not config.service_account_json:
+        if not config.service_account_file or not
+    config.service_account_file.exists():
+        raise FileNotFoundError(
+            "No Google service account credentials found."
+            f"Checked GOOGLE_SERVICE_ACCOUNT_JSON and file:
+        {config.service_account_file}"
+        )
 
     return config
 
@@ -145,9 +162,23 @@ class SeatalkBotService:
     def __init__(self, config: Config) -> None:
         self.config = config
         self.timezone = ZoneInfo(config.timezone_name)
-        self.credentials = service_account.Credentials.from_service_account_file(
-            str(config.service_account_file),
-            scopes=SCOPES,
+
+        if config.service_account_json:
+    try:
+        service_account_info = json.loads(config.service_account_json)
+        except json.JSONDecodeError as exc:
+        raise ValueError("GOOGLE_SERVICE_ACCOUNT_JSON is not valid JSON.") from exc
+
+    self.credentials = service_account.Credentials.from_service_account_info(
+        service_account_info,
+        scopes=SCOPES,
+    )
+else:
+    self.credentials = service_account.Credentials.from_service_account_file(
+        str(config.service_account_file),
+        scopes=SCOPES,
+    )
+
         )
         session = requests.Session()
         session.trust_env = config.use_env_proxy
