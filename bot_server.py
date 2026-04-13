@@ -86,6 +86,13 @@ def ensure_binary(binary_name: str) -> None:
 def load_config() -> Config:
     env_file_values = load_env_file(Path(".env"))
 
+   service_account_file_value = get_setting(
+        env_file_values,
+        "google_service_account_json",
+        "GOOGLE_SERVICE_ACCOUNT_JSON",
+        "",
+    ).strip()
+
     service_account_file_value = get_setting(
         env_file_values,
         "google_service_account_file",
@@ -99,7 +106,7 @@ def load_config() -> Config:
         sheet_id=get_setting(env_file_values, "sheet_id", "SHEET_ID"),
         tab_name=get_setting(env_file_values, "tab_name", "TAB_NAME"),
         capture_range=get_setting(env_file_values, "capture_range", "CAPTURE_RANGE", "B2:M30"),
-        seatalk_webhook_url=get_setting(env_file_values, "seatalk_webhook_url", "SEATLK_WEBHOOK_URL"),
+        seatalk_webhook_url=get_setting(env_file_values, "seatalk_webhook_url", "SEATALK_WEBHOOK_URL"),
         report_link=get_setting(env_file_values, "report_link", "REPORT_LINK"),
         timezone_name=get_setting(env_file_values, "timezone", "BOT_TIMEZONE", "Asia/Manila"),
         service_account_file=service_account_file,
