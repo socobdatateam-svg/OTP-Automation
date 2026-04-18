@@ -87,7 +87,13 @@ def load_env_file(path: Path) -> dict[str, str]:
 
 
 def get_setting(file_values: dict[str, str], file_key: str, env_key: str, default: str | None = None) -> str:
-    return os.getenv(env_key) or file_values.get(env_key) or file_values.get(file_key) or (default or "")
+    return (
+        os.getenv(env_key)
+        or os.getenv(file_key)
+        or file_values.get(env_key)
+        or file_values.get(file_key)
+        or (default or "")
+    )
 
 
 def parse_bool(value: str, default: bool) -> bool:
