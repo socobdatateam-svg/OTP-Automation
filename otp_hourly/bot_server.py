@@ -530,6 +530,12 @@ def build_handler(service: SeatalkBotService) -> type[BaseHTTPRequestHandler]:
                 return
             self.respond_json(HTTPStatus.OK, service.status())
 
+        def do_HEAD(self) -> None:  # noqa: N802
+            if self.path not in {"/", "/healthz"}:
+                self.respond_empty(HTTPStatus.NOT_FOUND)
+                return
+            self.respond_empty(HTTPStatus.OK)
+
         def do_POST(self) -> None:  # noqa: N802
             if self.path != "/trigger":
                 self.respond_json(HTTPStatus.NOT_FOUND, {"error": "Not found"})
@@ -589,6 +595,11 @@ def build_handler(service: SeatalkBotService) -> type[BaseHTTPRequestHandler]:
             self.send_header("Content-Length", str(len(body)))
             self.end_headers()
             self.wfile.write(body)
+
+        def respond_empty(self, status: HTTPStatus) -> None:
+            self.send_response(status)
+            self.send_header("Content-Length", "0")
+            self.end_headers()
 
         def log_message(self, format: str, *args: Any) -> None:  # noqa: A003
             LOGGER.info("%s - %s", self.address_string(), format % args)

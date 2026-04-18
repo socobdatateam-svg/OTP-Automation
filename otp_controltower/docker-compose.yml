@@ -1,0 +1,9 @@
+services:
+  otp-controltower:
+    build: .
+    container_name: otp-controltower
+    restart: unless-stopped
+    ports:
+      - "8081:8080"
+    volumes:
+      - ./.env:/app/.env:ro
